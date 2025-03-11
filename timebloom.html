@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TimeBloom - Age Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f766e, #2dd4bf);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 25px;
+            animation: fadeIn 1s ease-in-out;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #0f766e;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="date"]:focus {
+            border-color: #14b8a6;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(20, 184, 166, 0.7);
+            animation: glowPulse 1.5s infinite;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #f97316, #facc15);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s infinite;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        button:hover::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        button:hover {
+            background: linear-gradient(45deg, #facc15, #f97316);
+            transform: translateY(-2px);
+            animation: none;
+        }
+
+        .result {
+            margin-top: 25px;
+            font-size: 1.3rem;
+            line-height: 1.5;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            background: rgba(20, 184, 166, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .result.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #f97316;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 rgba(249, 115, 22, 0.7); }
+            50% { transform: scale(1.03); box-shadow: 0 0 15px rgba(249, 115, 22, 0.5); }
+            100% { transform: scale(1); box-shadow: 0 0 0 rgba(249, 115, 22, 0.7); }
+        }
+
+        @keyframes glowPulse {
+            0% { box-shadow: 0 0 5px rgba(20, 184, 166, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(20, 184, 166, 0.8); }
+            100% { box-shadow: 0 0 5px rgba(20, 184, 166, 0.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TimeBloom</h1>
+        <form id="ageForm">
+            <label for="dob">Enter Your Date of Birth:</label>
+            <input type="date" id="dob" required placeholder="Select your birth date">
+            <button type="submit">Bloom</button>
+        </form>
+        <div class="result" id="result" aria-live="polite"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        function calculateAgeDetails(dob, today) {
+            let years = today.getFullYear() - dob.getFullYear();
+            let months = today.getMonth() - dob.getMonth();
+            let days = today.getDate() - dob.getDate();
+
+            if (days < 0) {
+                months--;
+                const lastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+                days += lastMonth.getDate();
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            const totalDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+            let nextBday = new Date(today.getFullYear(), dob.getMonth(), dob.getDate());
+            if (nextBday < today) {
+                nextBday.setFullYear(today.getFullYear() + 1);
+            }
+            const daysToBday = Math.floor((nextBday - today) / (1000 * 60 * 60 * 24));
+
+            return { years, months, days, totalDays, daysToBday };
+        }
+
+        document.getElementById('ageForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const dobInput = document.getElementById('dob');
+            const dob = new Date(dobInput.value);
+            const today = new Date("2025-03-08"); // Fixed for testing; remove for live use
+            const result = document.getElementById('result');
+
+            result.classList.remove('visible');
+
+            if (!dobInput.value) {
+                result.innerHTML = '<span class="error">Please select a date.</span>';
+                result.classList.add('visible');
+                return;
+            }
+
+            if (dob > today) {
+                result.innerHTML = '<span class="error">Date cannot be in the future.</span>';
+                result.classList.add('visible');
+                return;
+            }
+
+            const ageDetails = calculateAgeDetails(dob, today);
+
+            if (!isNaN(ageDetails.years) && ageDetails.years >= 0) {
+                result.innerHTML = `
+                    🌸 You are <strong>${ageDetails.years} years</strong>, ${ageDetails.months} months, and ${ageDetails.days} days old!<br>
+                    <small>Total days alive: ${ageDetails.totalDays}</small><br>
+                    <small>Days until next birthday: ${ageDetails.daysToBday}</small>
+                `;
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    colors: ['#14b8a6', '#f97316', '#facc15']
+                });
+            } else {
+                result.innerHTML = '<span class="error">Invalid date entered.</span>';
+            }
+
+            result.classList.add('visible');
+        });
+    </script>
+</body>
+</html>
